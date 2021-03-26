@@ -21,9 +21,9 @@ class World:
             events = pygame.event.get()
 
             for object in self.objects:
+                object.events(self.objects, events)
                 object.render(self.screen)
                 object.update(self.objects)
-                object.events(self.objects, events)
 
             for event in events:
                 if event.type == QUIT:
@@ -33,22 +33,32 @@ class World:
             pygame.display.update()
             self.clock.tick(FRAME_RATE)
 
+class KeyMap:
+    internal = {}
+
+    def __getitem__(self, key):
+        try:
+            return self.internal[str(key)]
+        except KeyError:
+            return False
+
+    def __setitem__(self, key, value):
+        self.internal[str(key)] = value
+
 class Object:
+    keys = KeyMap()
+
+    # blank render, requires screen or context
     def render(self, ctx):
         pass
 
+    # blank update, requires world objects
     def update(self, objects):
         pass
 
-    def key_down(self):
-        pass
-
-    def key_up(self):
-        pass
-
+    # internal event manager
     def events(self, objects, events):
         for event in events:
-            if event.type == KEYDOWN:
-                self.key_down()
-            elif event.type == KEYUP:
-                self.key_up()
+            if hasattr(event, "key") and hasattr(event, "type"):
+                self.keys[event.key] = event.type == KEYDOWN
+                
