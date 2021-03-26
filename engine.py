@@ -1,12 +1,6 @@
-import pygame, sys
-from math import sqrt
+import pygame, math, sys
 from pygame.locals import *
-
-# CONFIG
-WINDOW_SIZE = (400, 400)
-WINDOW_NAME = "Pygame Window"
-FRAME_RATE = 60
-COLOR = (146, 244, 255)
+from config import *
 
 # main engine
 class World:
@@ -22,7 +16,7 @@ class World:
 
     def loop(self):
         while True:
-            self.screen.fill(COLOR)
+            self.screen.fill(BG_COLOR)
             events = pygame.event.get()
 
             for object in self.objects:
@@ -59,7 +53,7 @@ class Object:
     def render(self, ctx):
         pass
 
-    # blank update, requires world objects
+    # blank update, requires world objects & context
     def update(self, objects):
         pass
 
@@ -81,9 +75,6 @@ class Vector:
     def repr(self):
         return (self.x, self.y)
 
-    def arr(self):
-        return (self.x, self.y)
-
     def add(self, v):
         self.x += v.x
         self.y += v.y
@@ -101,15 +92,27 @@ class Vector:
         self.y /= n
 
     def mag(self):
-        return sqrt(self.x ** 2 + self.y ** 2)
+        return math.sqrt(self.x ** 2 + self.y ** 2)
 
     def set_mag(self, m):
         self.normalize()
         self.mult(m)
 
     def limit(self, max):
-        if(self.mag() > max):
+        if self.mag() > max:
             self.set_mag(max)
+
+    def x_limit(self, max):
+        if abs(self.x) > max:
+            clone = Vector(self.x, 0)
+            clone.set_mag(max)
+            self.x = clone.x
+
+    def y_limit(self, max):
+        if abs(self.y) > max and self.y != 0:
+            clone = Vector(0, self.y)
+            clone.set_mag(max)
+            self.y = clone.y
 
     def normalize(self):
         m = self.mag()

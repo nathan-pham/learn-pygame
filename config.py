@@ -1,0 +1,4 @@
+WINDOW_SIZE = (400, 400)
+WINDOW_NAME = "Pygame Window"
+FRAME_RATE = 60
+BG_COLOR = (146, 244, 255)
