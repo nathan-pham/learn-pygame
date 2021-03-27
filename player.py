@@ -3,20 +3,16 @@ from pygame.locals import *
 from engine import Object, Vector
 from config import *
 
-SPEED = 2
-MAX_SPEED = 5
-MAX_SPEED_X = 5
-MAX_SPEED_Y = 15
-JUMP_HEIGHT = 10
+SPEED = 1
+MAX_SPEED_X = 3
+MAX_SPEED_Y = 20
+JUMP_HEIGHT = 20
 AIR_RESISTANCE = 0.5
 GRAVITY = Vector(0, 1)
 
 class Player(Object):
-    def __init__(self, sprite_path):
-        self.sprite = pygame.image.load(sprite_path)
-        self.pos = Vector(50, 50)
-        self.vel = Vector(0, 0)
-        self.acc = Vector(0, 0)
+    def __init__(self, sprite_path, x, y):
+        super().__init__(sprite_path, x, y)
         self.jump = False
 
     def apply(self, v):
@@ -30,7 +26,7 @@ class Player(Object):
             self.pos.y = WINDOW_SIZE[1] - self.sprite.get_height()
             self.jump = True
 
-    def update(self, objects):
+    def update(self, keys):
         air_resistance = self.vel.clone()
         air_resistance.set_mag(-AIR_RESISTANCE)
 
@@ -41,18 +37,21 @@ class Player(Object):
         self.pos.add(self.vel)
         self.acc.mult(0)
 
-        if self.keys[K_RIGHT]:
+        if keys[K_RIGHT]:
             self.apply(Vector(SPEED, 0))
 
-        if self.keys[K_LEFT]:
+        if keys[K_LEFT]:
             self.apply(Vector(-SPEED, 0))
 
-        if self.keys[K_UP] and self.jump:
-            self.apply(Vector(0, -JUMP_HEIGHT))
+        if keys[K_UP] and self.jump:
+            self.vel.add(Vector(0, -JUMP_HEIGHT))
+            # self.apply(Vector(0, -JUMP_HEIGHT))
             self.jump = False
 
         self.apply(GRAVITY)
         self.bound()
+        self.box.x = self.pos.x
+        self.box.y = self.pos.y
 
-player = Player("assets/learn-pygame-sprite.png")
+player = Player("assets/learn-pygame-sprite.png", 50, 50)
 

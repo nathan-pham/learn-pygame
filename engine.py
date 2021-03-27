@@ -2,35 +2,6 @@ import pygame, math, sys
 from pygame.locals import *
 from config import *
 
-# main engine
-class World:
-    objects = []
-    clock = pygame.time.Clock()
-    screen = pygame.display.set_mode(WINDOW_SIZE, 0, 32)
-
-    def __init__(self, app_name):
-        pygame.display.set_caption(app_name or WINDOW_NAME)
-
-    def append(self, object):
-        self.objects.append(object)
-
-    def loop(self):
-        while True:
-            self.screen.fill(BG_COLOR)
-            events = pygame.event.get()
-
-            for object in self.objects:
-                object.events(self.objects, events)
-                object.render(self.screen)
-                object.update(self.objects)
-
-            for event in events:
-                if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
-
-            pygame.display.update()
-            self.clock.tick(FRAME_RATE)
 
 # Object utility class
 class KeyMap:
@@ -45,23 +16,58 @@ class KeyMap:
     def __setitem__(self, key, value):
         self.internal[str(key)] = value
 
+# main engine
+class World:
+    keys = KeyMap()
+    clock = pygame.time.Clock()
+    screen = pygame.display.set_mode(WINDOW_SIZE, 0, 32)
+
+    def __init__(self, app_name):
+        pygame.display.set_caption(app_name or WINDOW_NAME)
+
+    def loop(self, update):
+        while True:
+            events = pygame.event.get()
+
+            for event in events:
+                if hasattr(event, "key") and hasattr(event, "type"):
+                    self.keys[event.key] = event.type == KEYDOWN
+
+            update(self.screen, self.keys)
+            
+                # object.render(self.screen)
+                # object.update(self.objects)
+
+            for event in events:
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+            pygame.display.update()
+            self.clock.tick(FRAME_RATE)
+
 # boiler plate for Objects
 class Object:
-    keys = KeyMap()
+    def __init__(self, sprite_path, x, y):
+        self.sprite = pygame.image.load(sprite_path)
+        self.box = self.sprite.get_rect()
+        self.box.x = x
+        self.box.y = y
+        self.pos = Vector(x, y)
+        self.vel = Vector(0, 0)
+        self.acc = Vector(0, 0)
 
     # blank render, requires screen or context
     def render(self, ctx):
         pass
 
-    # blank update, requires world objects & context
-    def update(self, objects):
+    # blank update, requires keys
+    def update(self, keys):
         pass
 
-    # internal event manager
-    def events(self, objects, events):
-        for event in events:
-            if hasattr(event, "key") and hasattr(event, "type"):
-                self.keys[event.key] = event.type == KEYDOWN
+    # internal update
+    def _update(self):
+        pass
 
 # Vector abstraction    
 class Vector:
