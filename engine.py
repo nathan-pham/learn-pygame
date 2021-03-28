@@ -2,25 +2,11 @@ import pygame, math, sys
 from pygame.locals import *
 from config import *
 
-
-# Object utility class
-class KeyMap:
-    internal = {}
-
-    def __getitem__(self, key):
-        try:
-            return self.internal[str(key)]
-        except KeyError:
-            return False
-
-    def __setitem__(self, key, value):
-        self.internal[str(key)] = value
-
 # main engine
 class World:
-    keys = KeyMap()
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode(WINDOW_SIZE, 0, 32)
+    display = pygame.Surface(WINDOW_SCALE)
 
     def __init__(self, app_name):
         pygame.display.set_caption(app_name or WINDOW_NAME)
@@ -29,11 +15,7 @@ class World:
         while True:
             events = pygame.event.get()
 
-            for event in events:
-                if hasattr(event, "key") and hasattr(event, "type"):
-                    self.keys[event.key] = event.type == KEYDOWN
-
-            update(self.screen, self.keys)
+            update(self.display, pygame.key.get_pressed())
             
                 # object.render(self.screen)
                 # object.update(self.objects)
@@ -43,13 +25,14 @@ class World:
                     pygame.quit()
                     sys.exit()
 
+            self.screen.blit(pygame.transform.scale(self.display, WINDOW_SIZE), (0, 0))
             pygame.display.update()
             self.clock.tick(FRAME_RATE)
 
 # boiler plate for Objects
 class Object:
     def __init__(self, sprite_path, x, y):
-        self.sprite = pygame.image.load(sprite_path)
+        self.sprite = pygame.image.load(sprite_path) if isinstance(sprite_path, str) else sprite_path
         self.box = self.sprite.get_rect()
         self.box.x = x
         self.box.y = y
