@@ -28,21 +28,23 @@ def move(rect, vel, tiles):
         return rect, collision_types
 
     while len(hit_list) > 0:
-        rect.x -= testv.x
         rect.y -= testv.y
+        rect.x -= testv.x
         hit_list = collision_test(rect, tiles)
 
-    rect.x += 1
-    collision_types["right"] = len(collision_test(rect, tiles)) > 0
-    rect.x -= 2
-    collision_types["left"] = len(collision_test(rect, tiles)) > 0
-    rect.x += 1
+    offset = 1
 
-    rect.y += 1
+    rect.x += offset 
+    collision_types["right"] = len(collision_test(rect, tiles)) > 0
+    rect.x -= offset * 2
+    collision_types["left"] = len(collision_test(rect, tiles)) > 0
+    rect.x += offset
+
+    rect.y += offset
     collision_types["bottom"] = len(collision_test(rect, tiles)) > 0
-    rect.y -= 2
+    rect.y -= offset * 2
     collision_types["top"] = len(collision_test(rect, tiles)) > 0
-    rect.y += 1
+    rect.y += offset
     
     return rect, collision_types
 
@@ -78,7 +80,6 @@ class Player(Object):
 
         if keys[K_LEFT]:
             self.apply(Vector(-SPEED, 0))
-
 
     def update(self):
         drag = self.vel.clone()

@@ -45,10 +45,10 @@ for y in range(len(game_map)):
 def update(ctx, keys):
     ctx.fill(BG_COLOR)
 
-    player.render(ctx)
     player.update()
     player.move(keys)
     player.bound(tiles)
+    player.render(ctx)
 
     for tile in tiles:
         tile.render(ctx)
