@@ -3,27 +3,24 @@ from pygame.locals import *
 from config import *
 
 # main engine
-class World:
+class Engine:
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode(WINDOW_SIZE, 0, 32)
     display = pygame.Surface(WINDOW_SCALE)
 
     def __init__(self, app_name):
         pygame.display.set_caption(app_name or WINDOW_NAME)
-
+    
     def loop(self, update):
         while True:
             events = pygame.event.get()
-
-            update(self.display, pygame.key.get_pressed())
-            
-                # object.render(self.screen)
-                # object.update(self.objects)
 
             for event in events:
                 if event.type == QUIT:
                     pygame.quit()
                     sys.exit()
+
+            update(self.display, pygame.key.get_pressed())
 
             self.screen.blit(pygame.transform.scale(self.display, WINDOW_SIZE), (0, 0))
             pygame.display.update()
@@ -98,7 +95,7 @@ class Vector:
             self.x = clone.x
 
     def y_limit(self, max):
-        if abs(self.y) > max and self.y != 0:
+        if abs(self.y) > max:
             clone = Vector(0, self.y)
             clone.set_mag(max)
             self.y = clone.y

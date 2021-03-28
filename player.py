@@ -4,9 +4,9 @@ from engine import Object, Vector
 from config import *
 
 SPEED = 2
-MAX_SPEED_X = 100
-MAX_SPEED_Y = 6
-JUMP_SPEED = 6
+MAX_SPEED_X = 4
+MAX_SPEED_Y = 15
+JUMP_SPEED = 15
 AIR_CONSTANT = 0.1
 GRAVITY = Vector(0, 1)
 
@@ -19,32 +19,40 @@ def collision_test(rect, tiles):
 
 def move(rect, vel, tiles):
     collision_types = {"top": False, "bottom": False, "right": False, "left": False}
-    rect.x += vel.x
     hit_list = collision_test(rect, tiles)
-    for tile in hit_list:
-        if vel.x > 0:
-            rect.right = tile.left
-            collision_types["right"] = True
-        elif vel.x < 0:
-            rect.left = tile.right
-            collision_types["left"] = True
 
-    rect.y += vel.y
-    hit_list = collision_test(rect, tiles)
-    for tile in hit_list:
-        if vel.y > 0:
-            rect.bottom = tile.top
-            collision_types["bottom"] = True
-        elif vel.y < 0:
-            rect.top = tile.bottom
-            collision_types["top"] = True
+    testv = vel.clone()
+    testv.normalize()
 
+    if (testv.mag() == 0): 
+        return rect, collision_types
+
+    while len(hit_list) > 0:
+        rect.x -= testv.x
+        rect.y -= testv.y
+        hit_list = collision_test(rect, tiles)
+
+    rect.x += 1
+    collision_types["right"] = len(collision_test(rect, tiles)) > 0
+    rect.x -= 2
+    collision_types["left"] = len(collision_test(rect, tiles)) > 0
+    rect.x += 1
+
+    rect.y += 1
+    collision_types["bottom"] = len(collision_test(rect, tiles)) > 0
+    rect.y -= 2
+    collision_types["top"] = len(collision_test(rect, tiles)) > 0
+    rect.y += 1
+    
     return rect, collision_types
 
 class Player(Object):
+    moving_right = False
+    moving_left = False
+    ground = False
+
     def __init__(self, sprite_path, x, y):
         super().__init__(sprite_path, x, y)
-        self.ground = False
 
     def apply(self, v):
         self.acc.add(v)
@@ -58,15 +66,24 @@ class Player(Object):
         self.pos = Vector(player_box.x, player_box.y)
 
         if collisions["bottom"]:
-            self.vel.y = 0
+            self.vel.y = 0 # if this isn't included I go up like a ramp
             self.ground = True
-        else:
-            self.ground = False
 
-    def update(self, keys):
+        # do I add ground = False here since there aren't collisions?
+        # it seems to glitch out :(
+
+    def move(self, keys):
+        if keys[K_RIGHT]:
+            self.apply(Vector(SPEED, 0))
+
+        if keys[K_LEFT]:
+            self.apply(Vector(-SPEED, 0))
+
+
+    def update(self):
         drag = self.vel.clone()
         drag_magnitude = (drag.mag() ** 2) * AIR_CONSTANT
-        drag.set_mag(-drag_magnitude)
+        drag.set_mag(-drag_magnitude) 
         self.apply(drag)
         
         self.vel.add(self.acc)
@@ -74,16 +91,6 @@ class Player(Object):
         self.vel.y_limit(MAX_SPEED_Y)
         self.pos.add(self.vel)
         self.acc.mult(0)
-
-        if keys[K_RIGHT]:
-            self.apply(Vector(SPEED, 0))
-
-        if keys[K_LEFT]:
-            self.apply(Vector(-SPEED, 0))
-
-        if keys[K_UP] and self.ground:
-            self.vel.add(Vector(0, -JUMP_SPEED))
-            self.ground = False
 
         if not self.ground:
             self.apply(GRAVITY)

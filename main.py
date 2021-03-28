@@ -1,8 +1,9 @@
 import pygame
-from engine import World, Object, Vector
+from engine import Engine, Object, Vector
 from player import Player
 from tile import Tile
 from config import *
+from pygame.locals import *
 
 pygame.init()
 
@@ -29,7 +30,7 @@ game_map = [['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'
             ['1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1']]
 
 player = Player(player_img, 50, 50)
-world = World("Platformer Game")
+world = Engine("Platformer Game")
 tiles = []
 
 for y in range(len(game_map)):
@@ -45,7 +46,8 @@ def update(ctx, keys):
     ctx.fill(BG_COLOR)
 
     player.render(ctx)
-    player.update(keys)
+    player.update()
+    player.move(keys)
     player.bound(tiles)
 
     for tile in tiles:
